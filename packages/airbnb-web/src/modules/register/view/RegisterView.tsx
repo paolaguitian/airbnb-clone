@@ -1,24 +1,43 @@
 import * as React from 'react';
-import {Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button } from 'antd';
+import { withFormik, FormikErrors, FormikProps } from 'formik';
 const FormItem = Form.Item;
 
-export class RegisterView extends React.Component {
+interface FormValues {
+  email: '',
+  password: '',
+}
+
+interface Props {
+  submit: (values: FormValues) => Promise<FormikErrors<FormValues> | null>;
+}
+
+class RegisterViewWrapper extends React.Component<FormikProps<FormValues> & Props> {
   render() {
+    const { values, handleChange,handleBlur,handleSubmit } = this.props;
+
     return (
-      <div style={{ display:'flex' }}>
+      <form style={{ display:'flex' }} onSubmit={handleSubmit}>
         <div style={{ width: 400, margin: "auto" }}>
           <Form.Item>
             <Input
-              prefix={<Icon type="user"
-              style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="Username"
+              name="email"
+              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
               />
           </Form.Item>
           <Form.Item>
             <Input
+              name="password"
               prefix={<Icon type="lock" style={{ color: 'srgba(0,0,0,.25)' }} />}
               type="password"
               placeholder="Password"
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
               />
           </Form.Item>
           <Form.Item>
@@ -39,7 +58,17 @@ export class RegisterView extends React.Component {
             Or <a href="">Log In</a>
           </FormItem>
          </div>
-      </div>
+      </form>
     );
   }
 }
+
+export const RegisterView = withFormik<Props, FormValues>({
+  mapPropsToValues: () => ({ email: '', password:'' }),
+  handleSubmit: async (values, {props,setErrors}) => {
+    const errors = await props.submit(values);
+    if (errors) {
+      setErrors(errors);
+    }
+  },
+})(RegisterViewWrapper)
