@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Form, Icon, Input, Button } from 'antd';
-import { withFormik, FormikErrors, FormikProps } from 'formik';
+import { withFormik, FormikErrors, FormikProps, ErrorMessage } from 'formik';
+import * as yup from 'yup';
 const FormItem = Form.Item;
 
 interface FormValues {
@@ -14,12 +15,15 @@ interface Props {
 
 class RegisterViewWrapper extends React.Component<FormikProps<FormValues> & Props> {
   render() {
-    const { values, handleChange,handleBlur,handleSubmit } = this.props;
+    const { values, handleChange,handleBlur,handleSubmit,touched, errors,} = this.props;
 
     return (
       <form style={{ display:'flex' }} onSubmit={handleSubmit}>
         <div style={{ width: 400, margin: "auto" }}>
-          <Form.Item>
+          <Form.Item
+            help={touched.email && errors.email ? errors.email : ""}
+            validateStatus={touched.email && errors.email ? "error" : undefined}
+          >
             <Input
               name="email"
               prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -29,7 +33,10 @@ class RegisterViewWrapper extends React.Component<FormikProps<FormValues> & Prop
               onBlur={handleBlur}
               />
           </Form.Item>
-          <Form.Item>
+          <Form.Item
+            help={touched.password && errors.password ? errors.password : ""}
+            validateStatus={touched.password && errors.password ? "error" : undefined}
+          >
             <Input
               name="password"
               prefix={<Icon type="lock" style={{ color: 'srgba(0,0,0,.25)' }} />}
@@ -63,7 +70,24 @@ class RegisterViewWrapper extends React.Component<FormikProps<FormValues> & Prop
   }
 }
 
+const emailNotLongEnough = "email must be longer";
+const invalidEmail = "provide a valid email address";
+const passwordNotLongEnough = "password must be longer";
+
+const validationSchema = yup.object().shape({
+  email: yup
+    .string()
+    .min(6, emailNotLongEnough)
+    .max(255)
+    .email(invalidEmail),
+  password: yup
+    .string()
+    .min(6, passwordNotLongEnough)
+    .max(255)
+});
+
 export const RegisterView = withFormik<Props, FormValues>({
+  validationSchema,
   mapPropsToValues: () => ({ email: '', password:'' }),
   handleSubmit: async (values, {props,setErrors}) => {
     const errors = await props.submit(values);
