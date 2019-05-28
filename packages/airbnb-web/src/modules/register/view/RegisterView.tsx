@@ -79,11 +79,13 @@ const validationSchema = yup.object().shape({
     .string()
     .min(6, emailNotLongEnough)
     .max(255)
-    .email(invalidEmail),
+    .email(invalidEmail)
+    .required(),
   password: yup
     .string()
     .min(6, passwordNotLongEnough)
     .max(255)
+    .required()
 });
 
 export const RegisterView = withFormik<Props, FormValues>({
